@@ -13,6 +13,6 @@ void main() => runApp(MaterialApp(
     '/': (context) => MainPage(),
     '/fast-food': (context) => HamburgerPage(),
     '/pizza': (context) => PizzaPage(),
-    '/pig': (context) => TypingPage(),
+    '/typing': (context) => TypingPage(),
   },
 ));

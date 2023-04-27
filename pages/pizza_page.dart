@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PizzaPage extends StatefulWidget {
   const PizzaPage({Key? key}) : super(key: key);
@@ -8,49 +9,41 @@ class PizzaPage extends StatefulWidget {
 }
 
 class _PizzaPage extends State<PizzaPage> {
+  static const ingsKey = 'ings';
   String _userText = '';
-  List ings = [];
+  List<String> ings = [];
 
   @override
   void initState() {
     super.initState();
+    _initCounter();
 
     ings.addAll(['Лук', 'Помидоры', 'Колбаса']);
   }
 
-  // void _menuOpen() {
-  //   Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
-  //     return Scaffold(
-  //         appBar: AppBar(title: Text('Menu')),
-  //         body: Row(
-  //           mainAxisAlignment: MainAxisAlignment.center,
-  //           children: [
-  //             Column(
-  //               mainAxisAlignment: MainAxisAlignment.spaceAround,
-  //               children: [
-  //                 OutlinedButton(onPressed: () {
-  //                   Navigator.pushReplacementNamed(context, '/');
-  //                 },
-  //                     child: Padding(
-  //                       padding: EdgeInsets.all(20),
-  //                       child: Text('Main Page', style: TextStyle(fontSize: 40)),
-  //                     )
-  //                 ),
-  //                 OutlinedButton(onPressed: () {
-  //                   Navigator.pushReplacementNamed(context, '/todo');
-  //                 },
-  //                     child: Padding(
-  //                       padding: EdgeInsets.all(20),
-  //                       child: Text('TODO Page', style: TextStyle(fontSize: 40)),
-  //                     )
-  //                 ),
-  //               ],
-  //             )],
-  //         )
-  //     );
-  //   })
-  //   );
-  // }
+  Future _initCounter() async {
+    ings = await _getCounter();
+    setState(() {
+      ings = ings;
+    });
+  }
+
+  Future _getCounter() async {
+    var res = await SharedPreferences.getInstance();
+    return res.getStringList(ingsKey) ?? [];
+  }
+
+  Future _setCounter() async {
+    var res = await SharedPreferences.getInstance();
+    res.setStringList(ingsKey, ings);
+  }
+
+  Future _remIng(index) async {
+    setState(() {
+      ings.removeAt(index);
+    });
+    _setCounter();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,9 +68,7 @@ class _PizzaPage extends State<PizzaPage> {
                     title: Text(ings[index]),
                     trailing: IconButton(
                         onPressed: () {
-                          setState(() {
-                            ings.removeAt(index);
-                          });
+                          _remIng(index);
                         },
                         icon: Icon(
                           Icons.remove_circle_outline,
@@ -88,9 +79,7 @@ class _PizzaPage extends State<PizzaPage> {
 
               )),
               onDismissed: (direction) {
-                setState(() {
-                  ings.removeAt(index);
-                });
+                _remIng(index);
               },
             );
           }
@@ -114,7 +103,8 @@ class _PizzaPage extends State<PizzaPage> {
                       _userText = '';
                     });
                     Navigator.of(context).pop();
-                },
+                    _setCounter();
+                  },
                     child: Text('Готово'))
               ],
             );
